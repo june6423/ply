@@ -7,6 +7,7 @@ tokens = ( 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MODULAR', 'LT','LE','GT','GE','E
             'LOGAND',
             #'LOGOR',
             'LOGNOT','LPAREN', 'RPAREN','INTEGER','STRING','BOOLEAN' )
+#주석처리 한 애들 -> 넣으면 LEX가 안됨
 
 # Ignored characters
 t_ignore = ' \t'
@@ -30,12 +31,9 @@ t_LOGAND = r'&&'
 t_LOGNOT = r'!'
 t_LPAREN = r'\('
 t_RPAREN = r'\)'
-#t_INTEGER = r'\d+'
-#t_STRING = r'\".*?\"'
-#t_BOOLEAN = r'true|false'
-
 #t_UPLUS = r'\+'
 #t_UMINUS = r'\-'
+
 #주석처리 한 애들 -> 넣으면 LEX가 안됨
 
 
@@ -45,7 +43,7 @@ precedence = (
     ('left','EQ','NE','LT',"LE","GT","GE"),
     ('left','PLUS','MINUS'),
     ('left','TIMES','DIVIDE','MODULAR'),
-    ('right','UPLUS','UMINUS'),
+    #('right','UPLUS','UMINUS'),
     ('left','LPAREN','RPAREN')
 )
 
@@ -101,6 +99,14 @@ while(True):
 #        p[0] = p[2]
 #    elif p[2] == '-':
 #        p[0] = -p[2]
+
+# 여기서 부터 PARSER. LEX는 잘 되는데 PARSING은 문제가 많네요.
+# 계속 오류가 떠서 일단 작업하던 부분 전부 주석처리해놨습니다.    
+# 손으로 Parsing했을 때는 원하는 곳에 원하는 변수를 넣을 수 있었는데 여기선 어떻게 하는지 잘 모르겠네요...
+# Boolean -> Integer EQ Integer 같은 경우에서 p[0]에 bool값을, p[1]과 p[3]에 integer값을 넣는 방법을 모르겠습니다.
+# 이 파트 유의하면서 계속 작업하겠습니다.
+    
+"""  
 
 def p_integer_compare(p):
     '''boolean -> integer EQ integer
@@ -177,4 +183,4 @@ parser = yacc()
 
 # Parse an expression
 ast = parser.parse('2 * 3 + 4 * (5 - x)')
-print(ast)
+print(ast) """
