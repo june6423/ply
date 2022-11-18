@@ -102,7 +102,7 @@ while(True):
 #    elif p[2] == '-':
 #        p[0] = -p[2]
 
-def p_compare_integer(p):
+def p_integer_compare(p):
     '''boolean -> integer EQ integer
                 | integer NE integer
                 | integer LT integer
@@ -122,12 +122,12 @@ def p_compare_integer(p):
     elif p[2] == '>=':
         p[0] = (p[1] >= p[3])
 
-def p_logical_integer(p):
+def p_integer_logical(p):
     '''boolean -> boolean LOGAND boolean'''   
     if p[2] == "&&":
         p[0] = (p[1] and p[3])
 
-def p_arth_integer(p):
+def p_integer_arthimetric(p):
     '''integer -> integer PLUS integer
                 | integer MINUS integer
                 | integer TIMES integer
@@ -135,15 +135,14 @@ def p_arth_integer(p):
                 | integer MODULAR integer'''  
     if p[2] == '+':
         p[0] = p[1] + p[3] 
-    if p[2] == '-':
+    elif p[2] == '-':
         p[0] = p[1] - p[3] 
-    if p[2] == '*':
+    elif p[2] == '*':
         p[0] = p[1] * p[3] 
-    if p[2] == '/':
+    elif p[2] == '/':
         p[0] = p[1] / p[3] 
-    if p[2] == '%':
+    elif p[2] == '%':
         p[0] = p[1] % p[3]
-
 
 def p_factor_integer(p):
     '''
@@ -151,6 +150,18 @@ def p_factor_integer(p):
     '''
     p[0] = ('integer', p[1])
 
+
+def p_factor_string(p):
+    '''
+    factor : string
+    '''
+    p[0] = ('string', p[1])
+
+def p_factor_boolean(p):
+    '''
+    factor : boolean
+    '''
+    p[0] = ('boolean', p[1])
 
 def p_factor_grouped(p):
     '''
