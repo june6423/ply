@@ -1,12 +1,21 @@
 from ply.lex import lex
 from ply.yacc import yacc
 
+#keywords
+reserved = {
+    'var' : 'KVAR',
+    'int' : 'KINT',
+    'bool' : 'KBOOL'
+}
+
 # All tokens must be named in advance.
 tokens = ( 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MODULAR', 'LT','LE','GT','GE','EQ','NE',
             #'DOUBLEPLUS','DOUBLEMINUS',
             'LOGAND',
-            #'LOGOR',
-            'LOGNOT','LPAREN', 'RPAREN','INTEGER','STRING','BOOLEAN' )
+            'LOGOR',
+            'LOGNOT',
+            'LPAREN', 'RPAREN',
+             'INTEGER','STRING','BOOLEAN' ) + tuple(reserved.values())
 #주석처리 한 애들 -> 넣으면 LEX가 안됨
 
 # Ignored characters
@@ -27,7 +36,7 @@ t_NE = r'!='
 #t_DOUBLEPLUS = r'++'
 #t_DOUBLEMINUS = r'--'
 t_LOGAND = r'&&'
-#t_LOGOR = r'||'
+t_LOGOR = r'\|\|'
 t_LOGNOT = r'!'
 t_LPAREN = r'\('
 t_RPAREN = r'\)'
@@ -38,13 +47,13 @@ t_RPAREN = r'\)'
 
 
 precedence = (
-    #('left','LOGOR'),
-    ('left','LOGAND'),
+    ('left','LOGOR', 'LOGAND'),
+    ('right','LOGNOT'),
     ('left','EQ','NE','LT',"LE","GT","GE"),
     ('left','PLUS','MINUS'),
     ('left','TIMES','DIVIDE','MODULAR'),
     #('right','UPLUS','UMINUS'),
-    ('left','LPAREN','RPAREN')
+    #('left','LPAREN','RPAREN')
 )
 
 
@@ -56,14 +65,21 @@ def t_INTEGER(t):
     return t
 
 def t_STRING(t):
-    r'\".*?\"'
-    t.value = str(t.value)
+    r'[a-zA-Z_][a-zA-Z0-9_]*'
+    t.type = reserved.get(t.value, 'STRING')
     return t
 
 def t_BOOLEAN(t):
     r'true|false'
-    t.value = bool(t.value)
+    t.value = True if t.value == 'true' else False
     return t
+
+
+literals = [
+    '=', '+', '-', '*', '/',  # arithmetic(except '=')
+    '(', ')',  # parenthesis
+    '!'  # logical
+]
 
 # Ignored token with an action associated with it
 def t_ignore_newline(t):
@@ -79,12 +95,12 @@ def t_error(t):
     
 lexer = lex()
 
-lexer.input("1+(2+3)%4<=&&\"ASDF\"true")
+lexer.input("2 * 3 + 4 * (5 - 1)")
 while(True):
     token = lexer.token()
     if not token:
         break
-    print(token)
+    print(token, token.value)
 
 # --- Parser
 
@@ -100,21 +116,14 @@ while(True):
 #    elif p[2] == '-':
 #        p[0] = -p[2]
 
-# 여기서 부터 PARSER. LEX는 잘 되는데 PARSING은 문제가 많네요.
-# 계속 오류가 떠서 일단 작업하던 부분 전부 주석처리해놨습니다.    
-# 손으로 Parsing했을 때는 원하는 곳에 원하는 변수를 넣을 수 있었는데 여기선 어떻게 하는지 잘 모르겠네요...
-# Boolean -> Integer EQ Integer 같은 경우에서 p[0]에 bool값을, p[1]과 p[3]에 integer값을 넣는 방법을 모르겠습니다.
-# 이 파트 유의하면서 계속 작업하겠습니다.
-    
-"""  
 
 def p_integer_compare(p):
-    '''boolean -> integer EQ integer
-                | integer NE integer
-                | integer LT integer
-                | integer LE integer
-                | integer GT integer
-                | integer GE integer'''
+    '''condition : expression EQ expression
+                 | expression NE expression
+                 | expression LT expression
+                 | expression LE expression
+                 | expression GT expression
+                 | expression GE expression'''
     if p[2] == '==':
         p[0] = (p[1] == p[3])  
     elif p[2] == '!=':
@@ -128,17 +137,32 @@ def p_integer_compare(p):
     elif p[2] == '>=':
         p[0] = (p[1] >= p[3])
 
+def p_string_compare(p):
+    """statement : statement EQ statement
+                 | statement NE statement
+    """
+    if p[2] == '==':
+        p[0] = (p[1] == p[3])
+    elif p[2] == '!=':
+        p[0] = (p[1] != p[3])
+
+
 def p_integer_logical(p):
-    '''boolean -> boolean LOGAND boolean'''   
-    if p[2] == "&&":
+    '''condition : condition LOGAND condition
+                 | condition LOGOR condition
+    '''   
+    if p[2] == '&&':
         p[0] = (p[1] and p[3])
+    elif p[2] == '||':
+        p[0] = (p[1] or p[3])
+        
 
 def p_integer_arthimetric(p):
-    '''integer -> integer PLUS integer
-                | integer MINUS integer
-                | integer TIMES integer
-                | integer DIVIDE integer
-                | integer MODULAR integer'''  
+    '''expression : expression PLUS expression
+                  | expression MINUS expression
+                  | expression TIMES expression
+                  | expression DIVIDE expression
+                  | expression MODULAR expression'''  
     if p[2] == '+':
         p[0] = p[1] + p[3] 
     elif p[2] == '-':
@@ -150,37 +174,52 @@ def p_integer_arthimetric(p):
     elif p[2] == '%':
         p[0] = p[1] % p[3]
 
-def p_factor_integer(p):
-    '''
-    factor : INTEGER
-    '''
-    p[0] = ('integer', p[1])
+ 
+def p_statement_expr(p):
+    """
+    statement : expression
+              | condition
+    """
+    p[0] = p[1]
 
 
-def p_factor_string(p):
+ 
+def p_expr_integer(p):
+    """
+    expression : INTEGER   
+    """
+    p[0]=p[1]
+    
+def p_expr_string(p):
     '''
-    factor : string
+    expression : STRING
     '''
-    p[0] = ('string', p[1])
+    p[0] = p[1]
 
-def p_factor_boolean(p):
+def p_condition_boolean(p):
     '''
-    factor : boolean
+    condition : BOOLEAN
     '''
-    p[0] = ('boolean', p[1])
+    p[0] =  p[1]
 
-def p_factor_grouped(p):
-    '''
-    factor : LPAREN expression RPAREN
-    '''
-    p[0] = ('grouped', p[2])
-
+def p_condition_grouped(p):
+    "condition : LPAREN condition RPAREN"
+    p[0] = p[2]
+    
+def p_expression_grouped(p):
+    "expression : LPAREN expression RPAREN"
+    p[0] = p[2]
+    
 def p_error(p):
     print(f'Syntax error at {p.value!r}')
+    
+def p_empty(p):
+    """empty :"""
+    pass
 
 # Build the parser
 parser = yacc()
 
 # Parse an expression
-ast = parser.parse('2 * 3 + 4 * (5 - x)')
-print(ast) """
+ast = parser.parse('2')
+print(ast) 

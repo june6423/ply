@@ -275,7 +275,7 @@ ply 공식 document(http://www.dabeaz.com/ply/ply.html)를 조금 읽어보니 t
 예를 들어, '+' 와 '+='을 구분할 때 항상 '+'로 구분하게 된다고 하네요...
 저도 코드 작성해보면서 이런 형태의 오류가 자주 나왔던 것 같습니다.
 
-parser에서는 우선 grammer를 선언할 때 colon 대신 화살표를 쓴게 분제 될 수 도 있을 것 같습니다.
+parser에서는 우선 grammer를 선언할 때 colon 대신 화살표를 쓴게 문제 될 수 도 있을 것 같습니다.
 그리고 말씀하신 p sequence에 type을 따로따로 assign하는 것에 대하여 
 저는 앞서 말씀드린 variable을 분리하는 방식을 사용했습니다.
 
