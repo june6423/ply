@@ -117,6 +117,23 @@ while(True):
 #        p[0] = -p[2]
 
 
+def p_integer_arthimetric(p):
+    '''expression : expression PLUS expression
+                  | expression MINUS expression
+                  | expression TIMES expression
+                  | expression DIVIDE expression
+                  | expression MODULAR expression'''  
+    if p[2] == '+':
+        p[0] = p[1] + p[3] 
+    elif p[2] == '-':
+        p[0] = p[1] - p[3] 
+    elif p[2] == '*':
+        p[0] = p[1] * p[3] 
+    elif p[2] == '/':
+        p[0] = p[1] / p[3] 
+    elif p[2] == '%':
+        p[0] = p[1] % p[3]
+
 def p_integer_compare(p):
     '''condition : expression EQ expression
                  | expression NE expression
@@ -137,14 +154,14 @@ def p_integer_compare(p):
     elif p[2] == '>=':
         p[0] = (p[1] >= p[3])
 
-def p_string_compare(p):
-    """statement : statement EQ statement
-                 | statement NE statement
-    """
-    if p[2] == '==':
-        p[0] = (p[1] == p[3])
-    elif p[2] == '!=':
-        p[0] = (p[1] != p[3])
+#def p_string_compare(p):
+#    """statement : statement EQ statement
+#                 | statement NE statement
+#    """
+#    if p[2] == '==':
+#        p[0] = (p[1] == p[3])
+#    elif p[2] == '!=':
+#        p[0] = (p[1] != p[3])
 
 
 def p_integer_logical(p):
@@ -156,24 +173,6 @@ def p_integer_logical(p):
     elif p[2] == '||':
         p[0] = (p[1] or p[3])
         
-
-def p_integer_arthimetric(p):
-    '''expression : expression PLUS expression
-                  | expression MINUS expression
-                  | expression TIMES expression
-                  | expression DIVIDE expression
-                  | expression MODULAR expression'''  
-    if p[2] == '+':
-        p[0] = p[1] + p[3] 
-    elif p[2] == '-':
-        p[0] = p[1] - p[3] 
-    elif p[2] == '*':
-        p[0] = p[1] * p[3] 
-    elif p[2] == '/':
-        p[0] = p[1] / p[3] 
-    elif p[2] == '%':
-        p[0] = p[1] % p[3]
-
  
 def p_statement_expr(p):
     """
@@ -182,8 +181,6 @@ def p_statement_expr(p):
     """
     p[0] = p[1]
 
-
- 
 def p_expr_integer(p):
     """
     expression : INTEGER   
@@ -221,5 +218,5 @@ def p_empty(p):
 parser = yacc()
 
 # Parse an expression
-ast = parser.parse('2')
+ast = parser.parse('(2+1)*3')
 print(ast) 
