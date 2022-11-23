@@ -218,5 +218,5 @@ def p_empty(p):
 parser = yacc()
 
 # Parse an expression
-ast = parser.parse('(2+1)*3')
+ast = parser.parse('(3%2)*3')
 print(ast) 
