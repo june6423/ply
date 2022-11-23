@@ -43,8 +43,8 @@ t_GT = r'>='
 t_EQ = r'=='
 t_NE = r'!='
 
-t_BLANK = r'( |\t)*'
-t_NEWLINE = r'\n'
+#t_BLANK = r'( |\t)*'
+#t_NEWLINE = r'\n'
 
 def t_BOOL(t):
     r'false|true'
@@ -68,7 +68,7 @@ literals = [
     '=', '+', '-', '*', '/',  # arithmetic(except '=')
     '(', ')',  # parenthesis
     '!',  # logical
-    ':', ','
+    ':', ',', '{', '}'
 ]
 
 # Ignored characters
@@ -155,25 +155,25 @@ def p_statement_reassign(p):
         print("Undefined identifier '%s'" % p[1])
         p[0] = 0
 
-def p_blank_assign(p):
-    """
-    blank : t_BLANK
-    """
-    p[0] = p[1]
+#def p_blank_assign(p):
+#    """
+#    blank : t_BLANK
+#    """
+#    p[0] = p[1]
 
         
-def p_newline_assign(p):
-    """
-    newline : blank t_NEWLINE blank
-    """
-    p[0] = p[2]
+#def p_newline_assign(p):
+#    """
+#    newline : blank t_NEWLINE blank
+#    """
+#    p[0] = p[2]
 
-def p_multi_newline(p):
-    """
-    multiline : newline newline
-              | multiline newline
-    """
-    p[0] = p[1]
+#def p_multi_newline(p):
+#    """
+#    multiline : newline newline
+#              | multiline newline
+#    """
+#    p[0] = p[1] > 무한루프 나옴.
 
 def p_empty(p):
     """empty :"""
@@ -204,8 +204,8 @@ def p_else_staement_extension(p):
 
 def p_switch_statement(p):
     """
-    statement : KSWITCH '{" case_statement "}"
-              | KSWITCH ID "{" case_var_statement "}"
+    statement : KSWITCH '{' case_statement '}'
+              | KSWITCH ID '{' case_var_statement '}'
     """
 
 def p_case_statement_extension(p):
@@ -237,8 +237,8 @@ def p_case_var_without_default_statement_extension(p):
 
 def p_var_statement_extention(p):
     """
-    var_statement : t_INT ',' var_statement
-                  | t_ID ',' var_statement
+    var_statement : INT ',' var_statement
+                  | ID ',' var_statement
                   | empty
     """
 #TYPE ISSUE!
