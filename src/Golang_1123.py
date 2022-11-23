@@ -243,6 +243,22 @@ def p_var_statement_extention(p):
     """
 #TYPE ISSUE!
     
+def p_for_statement(p):
+    """
+    statement : KFOR single_line_statement ';' condition ';' single_line_statement '{' for_statement '}'
+              | KFOR condition '{' for_statement '}'
+              | KFOR range_statement '{' for_statement '}'
+              | KFOR '{' for_statement '}'
+    """
+    #range_statement에서 range처리!
+
+def p_for_statement_extension(p):
+    """
+    for_statement : statement KCONTINUE for_statement
+                  | statement KBREAK for_statement
+                  | statement
+    """
+
 def p_expression_binop(p):
     """
     expression : expression '+' expression
