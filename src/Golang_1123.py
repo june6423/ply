@@ -151,6 +151,8 @@ def p_func_statement(p):
     """
     func_statement : KFUNC ID '(' declar_in_func_statement ')' '{' returnable_statement '}'
     """
+    if p[2] == "main":
+        print("Main function should exist unique")
 
 def p_declar_in_func_statement(p):
     """
@@ -576,6 +578,8 @@ grammer는 임시로 짠거라서 precedence나 conflict에 대해서 아직 검
 함수의 선언 : 매개변수 개수와 타입, 리턴 개수와 타입 문제.
 > 매개변수의 개수 저장 안함. 타입 저장안함. (매개변수로 받은 인자는 디폴트 값으로 초기화)
 > 리턴 개수 0개로 고정
+
+switch (x) case y:에서 x와 y의 타입이 다르면 Golang에선 에러 발생 > 본 프로그램에선 안 생김
 
 := 를 통해 정의하는 선언문의 경우, expression만 가능하도록 일단 막아두었습니다.
 """
