@@ -145,9 +145,16 @@ def p_global_statement_extension(p):
                      | empty
     """
     
-def func_statement(p):
-    pass
+def p_func_statement(p):
+    """
+    func_statement : KFUNC ID '(' statement ')' '{' returnable_statement '}'
+    """
 
+def p_returnable_statement(p):
+    """
+    returnable_statement : statement KRETURN returnable_statement
+                         | empty
+    """
 
 def p_global_assign_statement_extension(p):
     """
