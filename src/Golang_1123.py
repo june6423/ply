@@ -68,7 +68,7 @@ literals = [
     '=', '+', '-', '*', '/',  # arithmetic(except '=')
     '(', ')',  # parenthesis
     '!',  # logical
-    ':', ',', '{', '}'
+    ':', ',', '{', '}','"'
 ]
 
 # Ignored characters
@@ -124,9 +124,14 @@ names = {}
 #empty : NOTHING
 
 def p_statement_var_assign(p):
-    """statement : KVAR ID type "=" expression"""
+    """
+    statement : KVAR ID type '=' expression
+              | KVAR ID type '=' string
+    """
+    if p[2] in names:
+        print("DO not support redeclaration")
 
-    if p[3] == 'bool' and type(p[5]) != bool:
+    elif p[3] == 'bool' and type(p[5]) != bool:
         print("TypeError: non bool type assigned to bool")
         names[p[2]] = False
 
@@ -134,18 +139,44 @@ def p_statement_var_assign(p):
         print("TypeError: not int type assigned to int")
         names[p[2]] = 0
 
+    elif p[3] == 'string' and type(p[5]) != str:
+        print("TypeError: not string type assigned to string")
+        names[p[2]] = ""
+
     else:
         names[p[2]] = p[5]
 
+def p_statement_declaration(p):
+    """
+    statement : KVAR ID type
+    """
+    if p[2] in names:
+        print("DO not support redeclaration")
 
+    elif p[3] == 'bool':
+        names[p[2]] = True #default value
+    
+    elif p[3] == 'int':
+        names[p[3]] = 0 #default value
+    
+    elif p[3] == 'string':
+        names[p[3]] = "" #default value
+
+        
 def p_statement_bool_assign(p):
     """
     type : KINT
          | KBOOL
+         | KSTRING
          | empty
     """
     p[0] = p[1]
 
+def p_statement_string_assign(p):
+    """
+    string : '"' statement '"'
+    """
+    p[0] = p[2]
 
 def p_statement_reassign(p):
     """statement : ID "=" expression"""
@@ -251,6 +282,16 @@ def p_for_statement(p):
               | KFOR '{' for_statement '}'
     """
     #range_statement에서 range처리!
+
+def p_single_line_statement_extention(p):
+    """
+    single_line_statement : empty
+    """
+
+def p_range_statement_extension(p):
+    """
+    range_statement : empty
+    """
 
 def p_for_statement_extension(p):
     """
