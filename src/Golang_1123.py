@@ -22,7 +22,8 @@ reserved = {
     'continue': 'KCONTINUE',
     'import': 'KIMPORT',
     'return': 'KRETURN',
-    'Println': 'KPRINT'
+    'Println': 'KPRINT',
+    'main': 'KMAIN' #Actually, main is not keywords
 }
 
 # tokens
@@ -110,6 +111,8 @@ precedence = (
 )
 
 names = {}
+global_names = {}
+start = 'start'
 
 #USED variables
 #start : start symbol
@@ -122,6 +125,21 @@ names = {}
 #newline : single new line with blank (blank \n blank)
 #multiline : multi new line
 #empty : NOTHING
+
+def p_start(p):
+    """
+    start : KPACKAGE KMAIN KIMPORT string main_statement
+    """
+    if p[4] != "fmt":
+        print("Import Error: Unable to find package")
+
+def p_main_statement(p):
+    """
+    main_statement : global_statement KFUNC MAIN '(' ')' '{' statement '}' global_statement
+    """
+
+def p_global_statement_extension(p):
+    pass
 
 def p_statement_var_assign(p):
     """
@@ -225,6 +243,7 @@ def p_if_statement(p):
     statement : KIF condition '{' statement '}' else_statement
     """
     #How to return?
+    #condition 과 '{'가 같은 줄에 위치해야 함 > 처리방법 고민필요
 
 def p_else_staement_extension(p):
     """
