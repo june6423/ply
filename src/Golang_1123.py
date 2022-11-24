@@ -399,6 +399,7 @@ def p_single_line_statement_extention(p):
     """
     single_line_statement : empty
     """
+    #대입문, 
 
 def p_range_statement_extension(p):
     """
@@ -574,7 +575,7 @@ grammer는 임시로 짠거라서 precedence나 conflict에 대해서 아직 검
 
 함수의 선언 : 매개변수 개수와 타입, 리턴 개수와 타입 문제.
 > 매개변수의 개수 저장 안함. 타입 저장안함. (매개변수로 받은 인자는 디폴트 값으로 초기화)
-> 리턴 개수 한개로 고정
+> 리턴 개수 0개로 고정
 
 := 를 통해 정의하는 선언문의 경우, expression만 가능하도록 일단 막아두었습니다.
 """
