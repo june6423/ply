@@ -135,7 +135,7 @@ def p_start(p):
 
 def p_main_statement(p):
     """
-    main_statement : global_statement KFUNC MAIN '(' ')' '{' statement '}' global_statement
+    main_statement : global_statement KFUNC KMAIN '(' ')' '{' statement '}' global_statement
     """
 
 def p_global_statement_extension(p):
@@ -144,18 +144,59 @@ def p_global_statement_extension(p):
                      | global_assign_statement global_statement
                      | empty
     """
+    
+def func_statement(p):
+    pass
+
 
 def p_global_assign_statement_extension(p):
     """
     global_assign_statement : KVAR ID type '=' expression
                             | KVAR ID type '=' string
     """
+    if p[2] in global_names:
+        print("DO not support redeclaration")
+
+    elif p[3] == 'bool' and type(p[5]) != bool:
+        print("TypeError: non bool type assigned to bool")
+        global_names[p[2]] = False
+
+    elif p[3] == 'int' and type(p[5]) != int:
+        print("TypeError: not int type assigned to int")
+        global_names[p[2]] = 0
+
+    elif p[3] == 'string' and type(p[5]) != str:
+        print("TypeError: not string type assigned to string")
+        global_names[p[2]] = ""
+
+    else:
+        global_names[p[2]] = p[5]
+
+def p_global_statement_declaration(p):
+    """
+    global_assign_statement : KVAR ID type
+    """
+    if p[2] in global_names:
+        print("DO not support redeclaration")
+
+    elif p[3] == 'bool':
+        global_names[p[2]] = True #default value
+    
+    elif p[3] == 'int':
+        global_names[p[3]] = 0 #default value
+    
+    elif p[3] == 'string':
+        global_names[p[3]] = "" #default value
+
+        
+
+
 def p_statement_var_assign(p):
     """
     statement : KVAR ID type '=' expression
               | KVAR ID type '=' string
     """
-    if p[2] in names and p[2] not in global_names:
+    if p[2] in names:
         print("DO not support redeclaration")
 
     elif p[3] == 'bool' and type(p[5]) != bool:
@@ -232,6 +273,7 @@ def p_statement_reassign(p):
 #              | multiline newline
 #    """
 #    p[0] = p[1] > 무한루프 나옴.
+
 
 def p_empty(p):
     """empty :"""
@@ -364,6 +406,7 @@ def p_expression_int(p):
 def p_expression_name(p):
     "expression : ID"
     try:
+        p[0] = global_names[p[1]]
         p[0] = names[p[1]]
     except LookupError:
         print("Undefined identifier '%s'" % p[1])
@@ -472,4 +515,18 @@ parser에서는 우선 grammer를 선언할 때 colon 대신 화살표를 쓴게
 
 grammer는 임시로 짠거라서 precedence나 conflict에 대해서 아직 검증하지는 않았습니다.
 이 문제는 추후에 또 논의해 보면 좋을 것 같습니다.
+"""
+
+
+"""
+전역변수와 지역변수 : main함수 밖에서 선언하는 전역변수와 main함수 안에서 선언하는 지역변수 두 가지로 나누었습니다.
+이 외의 새로운 지역변수를 선언하는 경우는 일단 막았습니다.
+전역변수를 선언할 때 var x int = 2의 형태로 선언과 동시에 값을 입력할 수 있으나, var x int \n x = 2와 같이 변수를 선언하고, 다른 줄에서 값을 할당할 수는 없습니다.
+이는 Golang 문법상 이렇게 구현되는 것이 맞습니다.
+
+시작변수 start를 도입하여 package main import "fmt"를 사용하지 않으면 main함수를 호출할 수 없도록 하였습니다.
+
+구현한 것: if문, for문의 뼈대, switch문, 시작변수의 도입, 전역변수와 지역변수
+
+구현해야할 것: for문 내부에서 작동하는 range, for문 초기, 끝나는 조건, := 문법, 함수의 선언과 리턴, BLANK처리
 """
