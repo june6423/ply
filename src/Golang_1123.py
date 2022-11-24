@@ -139,14 +139,23 @@ def p_main_statement(p):
     """
 
 def p_global_statement_extension(p):
-    pass
+    """
+    global_statement : func_statement global_statement
+                     | global_assign_statement global_statement
+                     | empty
+    """
 
+def p_global_assign_statement_extension(p):
+    """
+    global_assign_statement : KVAR ID type '=' expression
+                            | KVAR ID type '=' string
+    """
 def p_statement_var_assign(p):
     """
     statement : KVAR ID type '=' expression
               | KVAR ID type '=' string
     """
-    if p[2] in names:
+    if p[2] in names and p[2] not in global_names:
         print("DO not support redeclaration")
 
     elif p[3] == 'bool' and type(p[5]) != bool:
