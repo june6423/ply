@@ -30,7 +30,7 @@ reserved = {
 tokens = (
              'LOR', 'LAND',  # logical
              'LE', 'LT', 'GE', 'GT', 'EQ', 'NE',  # relational
-
+             'DEF',
              'ID', 'INT', 'BOOL'  # identifier
          ) + tuple(reserved.values())
 
@@ -43,6 +43,7 @@ t_GE = r'>'
 t_GT = r'>='
 t_EQ = r'=='
 t_NE = r'!='
+t_DEF = r':='
 
 #t_BLANK = r'( |\t)*'
 #t_NEWLINE = r'\n'
@@ -125,6 +126,7 @@ start = 'start'
 #newline : single new line with blank (blank \n blank)
 #multiline : multi new line
 #empty : NOTHING
+#def_statement : := 를 사용하는 정의 code
 
 def p_start(p):
     """
@@ -147,8 +149,25 @@ def p_global_statement_extension(p):
     
 def p_func_statement(p):
     """
-    func_statement : KFUNC ID '(' statement ')' '{' returnable_statement '}'
+    func_statement : KFUNC ID '(' declar_in_func_statement ')' '{' returnable_statement '}'
     """
+
+def p_declar_in_func_statement(p):
+    """
+    declar_in_func_statement : ID type ',' declar_in_func_statement
+                             | empty
+    """
+    try:
+        temp = type(p[2])
+        if temp == 'bool':
+            names[p[1]] = True 
+        elif temp == 'int':
+            names[p[1]] = 0
+        elif temp == 'string':
+            names[p[1]] = ""
+    except:
+        pass
+#함수에 매개변수를 넣을 때, 그냥 default값을 넣음.
 
 def p_returnable_statement(p):
     """
@@ -194,9 +213,6 @@ def p_global_statement_declaration(p):
     
     elif p[3] == 'string':
         global_names[p[3]] = "" #default value
-
-        
-
 
 def p_statement_var_assign(p):
     """
@@ -314,6 +330,7 @@ def p_switch_statement(p):
     """
     statement : KSWITCH '{' case_statement '}'
               | KSWITCH ID '{' case_var_statement '}'
+              | KSWITCH def_statement '{' case_def_statement '}'
     """
 
 def p_case_statement_extension(p):
@@ -343,6 +360,19 @@ def p_case_var_without_default_statement_extension(p):
                                        | empty
     """
 
+def p_case_def_statment_extension(p):
+    """
+    case_def_statement : KCASE type ':' statement case_def_statement
+                       | KDEFAULT ':' statement case_def_without_default_statement
+                       | empty
+    """
+
+def p_case_def_without_default_statement_extension(p):
+    """
+    case_def_without_default_statement : KCASE type ':' statement case_def_without_default_statement
+                                       | empty
+    """
+
 def p_var_statement_extention(p):
     """
     var_statement : INT ',' var_statement
@@ -350,6 +380,11 @@ def p_var_statement_extention(p):
                   | empty
     """
 #TYPE ISSUE!
+
+def p_definition_statement_extension(p):
+    """
+    def_statement : ID DEF expression
+    """
     
 def p_for_statement(p):
     """
@@ -533,7 +568,13 @@ grammer는 임시로 짠거라서 precedence나 conflict에 대해서 아직 검
 
 시작변수 start를 도입하여 package main import "fmt"를 사용하지 않으면 main함수를 호출할 수 없도록 하였습니다.
 
-구현한 것: if문, for문의 뼈대, switch문, 시작변수의 도입, 전역변수와 지역변수
+구현한 것: if문, for문의 뼈대, switch문(변수가 있을 때, 없을 떄, type switch), 시작변수의 도입, 전역변수와 지역변수, := 문법(불완전), 함수의 선언과 리턴(불완전)
 
-구현해야할 것: for문 내부에서 작동하는 range, for문 초기, 끝나는 조건, := 문법, 함수의 선언과 리턴, BLANK처리
+구현해야할 것: for문 내부에서 작동하는 range, for문 초기, 끝나는 조건, BLANK처리
+
+함수의 선언 : 매개변수 개수와 타입, 리턴 개수와 타입 문제.
+> 매개변수의 개수 저장 안함. 타입 저장안함. (매개변수로 받은 인자는 디폴트 값으로 초기화)
+> 리턴 개수 한개로 고정
+
+:= 를 통해 정의하는 선언문의 경우, expression만 가능하도록 일단 막아두었습니다.
 """
