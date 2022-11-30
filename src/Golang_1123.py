@@ -11,7 +11,6 @@ reserved = {
     'break': 'KBREAK',
     'default':'KDEFAULT',
     'func':'KFUNC',
-    'select':'KSELECT',
     'case': 'KCASE',
     'else': 'KELSE',
     'package': 'KPACKAGE',
@@ -169,6 +168,8 @@ def p_declar_in_func_statement(p):
             names[p[1]] = ""
     except:
         pass
+    
+
 #함수에 매개변수를 넣을 때, 그냥 default값을 넣음.
 
 def p_returnable_statement(p):
@@ -176,7 +177,13 @@ def p_returnable_statement(p):
     returnable_statement : statement KRETURN returnable_statement
                          | empty
     """
+def p_statement_extension(p):
+    """
+    statememt : if_statement
+              | else_statement
+              | statement
 
+    """
 def p_global_assign_statement_extension(p):
     """
     global_assign_statement : KVAR ID type '=' expression
@@ -316,7 +323,7 @@ def p_statement_expr(p):
     
 def p_if_statement(p):
     """
-    statement : KIF condition '{' statement '}' else_statement
+    if_statement : KIF condition '{' statement '}' else_statement
     """
     #How to return?
     #condition 과 '{'가 같은 줄에 위치해야 함 > 처리방법 고민필요
@@ -330,7 +337,7 @@ def p_else_staement_extension(p):
 
 def p_switch_statement(p):
     """
-    statement : KSWITCH '{' case_statement '}'
+    switch_statement : KSWITCH '{' case_statement '}'
               | KSWITCH ID '{' case_var_statement '}'
               | KSWITCH def_statement '{' case_def_statement '}'
     """
@@ -390,19 +397,25 @@ def p_definition_statement_extension(p):
     
 def p_for_statement(p):
     """
-    statement : KFOR single_line_statement ';' condition ';' single_line_statement '{' for_statement '}'
-              | KFOR condition '{' for_statement '}'
-              | KFOR range_statement '{' for_statement '}'
-              | KFOR '{' for_statement '}'
+    for_statement : KFOR single_line_statement_1 ';' condition ';' single_line_statement_2 '{' statement '}'
+                  | KFOR condition '{' statement '}'
+                  | KFOR '{' statement '}'
     """
-    #range_statement에서 range처리!
 
-def p_single_line_statement_extention(p):
+def p_single_line_statement_1(p):
     """
-    single_line_statement : empty
+    single_line_statement_1 : single_line_statement_2
+                            | def_statement
     """
-    #대입문, 
-
+def p_single_line_statement_2(p):
+    """
+    single_line_statement_2 : assignment_statement
+                            | ID "++"
+                            | ID "--"
+                            | print_statement
+                            | empty
+    """
+    
 def p_range_statement_extension(p):
     """
     range_statement : empty
@@ -582,4 +595,9 @@ grammer는 임시로 짠거라서 precedence나 conflict에 대해서 아직 검
 switch (x) case y:에서 x와 y의 타입이 다르면 Golang에선 에러 발생 > 본 프로그램에선 안 생김
 
 := 를 통해 정의하는 선언문의 경우, expression만 가능하도록 일단 막아두었습니다.
+function 안에 function을 정의할 수 없음
+string의 value를 replace('"', '')을 통해 큰따옴표 제거(string 안에 큰 따옴표가 있는 경우는 조금 tricky...)
+STRING이 어떻게 처리될 지 논의 필요
+
+for문
 """
