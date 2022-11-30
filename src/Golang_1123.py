@@ -136,7 +136,7 @@ def p_start(p):
 
 def p_main_statement(p):
     """
-    main_statement : global_statement KFUNC KMAIN '(' ')' '{' statement '}' global_statement
+    main_statement : global_statement KFUNC KMAIN '(' ')' '{' returnable_statement '}' global_statement
     """
 
 def p_global_statement_extension(p):
@@ -371,14 +371,14 @@ def p_case_var_without_default_statement_extension(p):
 
 def p_case_def_statment_extension(p):
     """
-    case_def_statement : KCASE type ':' statement case_def_statement
+    case_def_statement : KCASE case_type_statement ':' statement case_def_statement
                        | KDEFAULT ':' statement case_def_without_default_statement
                        | empty
     """
 
 def p_case_def_without_default_statement_extension(p):
     """
-    case_def_without_default_statement : KCASE type ':' statement case_def_without_default_statement
+    case_def_without_default_statement : KCASE case_type_statement ':' statement case_def_without_default_statement
                                        | empty
     """
 
@@ -386,7 +386,14 @@ def p_var_statement_extention(p):
     """
     var_statement : INT ',' var_statement
                   | ID ',' var_statement
-                  | empty
+                  | INT
+                  | ID
+    """
+
+def p_case_type_statement_extension(p):
+    """
+    case_type_statement : type ',' case_type_statement
+                        | type
     """
 #TYPE ISSUE!
 
