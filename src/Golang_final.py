@@ -73,7 +73,7 @@ def t_ID(t):
 
 
 def t_INT(t):
-    r'\d+'
+    r'[\d]+'
     t.value = int(t.value)
     return t
 
@@ -103,7 +103,7 @@ t_ignore = ' \t'
 
 # Error handler for illegal characters
 def t_error(t):
-    error_list.append(f'Illegal character {t.value[0]!r}')
+    print(f'Illegal character {t.value[0]!r}')
     t.lexer.skip(1)
 
 
@@ -260,10 +260,10 @@ def p_global_assign_statement_default(p):  # add zero value handling / redeclare
         if p[4] is not None:
             if t != int:
                 error_list.append("TypeError: non int type assigned to int")
-            elif p[4] > ((1 << 63) - 1) or p[4] <= (-1 << 63):
-                error_list.append(f"Overflow Error: can not use {p[4]} for int32")
-            else:
+            elif -(1 << 63) <= p[4] < (1 << 63):
                 global_names[p[2]] = p[4]  # Accepted
+            else:
+                error_list.append(f"Overflow Error: can not use {p[4]} for int32")
 
         else:
             global_names[p[2]] = 0  # zero accepted
@@ -278,21 +278,21 @@ def p_global_assign_statement_default(p):  # add zero value handling / redeclare
         else:
             global_names[p[2]] = ""  # zero accepted
 
-    p[0] = ("global_var_assign", p[2], p[3], p[4])
+    p[0] = ("global_var_assign", p[2], type(global_names[p[2]]), p[4])
 
 
 def p_global_assign_const_statement(p):
     """global_const_assign_statement : KCONST ID type assign_expr"""
     # redeclared check
     if p[2] in global_names:
-        error_list.append(f"Error: {p[2]} redeclared in the scope")
+        print(f"Error: {p[2]} redeclared in the scope")
         return
 
     t = type(p[4])
     if p[3] == 'bool':
         if p[4] is not None:
             if t != bool:
-                error_list.append("TypeError: non bool type assigned to bool")
+                print("TypeError: non bool type assigned to bool")
             else:
                 global_names[p[2]] = p[4]  # Accepted
 
@@ -302,11 +302,11 @@ def p_global_assign_const_statement(p):
     elif p[3] == 'int':
         if p[4] is not None:
             if t != int:
-                error_list.append("TypeError: non int type assigned to int")
-            elif p[4] > ((1 << 63)-1) or p[4] <= (-1 << 64):
-                error_list.append(f"Overflow Error: can not use {p[4]} for int32")
-            else:
+                print("TypeError: non int type assigned to int")
+            elif -(1 << 63) <= p[4] < (1 << 63):
                 global_names[p[2]] = p[4]  # Accepted
+            else:
+                error_list.append(f"Overflow Error: can not use {p[4]} for int32")
 
         else:
             global_names[p[2]] = 0  # zero accepted
@@ -314,7 +314,7 @@ def p_global_assign_const_statement(p):
     elif p[3] == 'string':
         if p[4] is not None:
             if t != str:
-                error_list.append("TypeError: non string type assigned to string")
+                print("TypeError: non string type assigned to string")
             else:
                 global_names[p[2]] = p[4]  # Accepted
 
@@ -322,7 +322,7 @@ def p_global_assign_const_statement(p):
             global_names[p[2]] = ""  # zero accepted
 
     global_constants.add(p[2])
-    p[0] = ("global_const_assign", p[2], p[3], p[4])
+    p[0] = ("global_const_assign", p[2], type(global_names[p[2]]), p[4])
 
 
 def p_if_statement(p):
@@ -459,7 +459,7 @@ def p_var_empty(p):
 
 def p_for_statement(p):
     """
-    for_statement : FOR single_line_statement_1 ';' condition ';' single_line_statement_2 '{' NL statement '}' NLD
+    for_statement : FOR single_line_statement_1 ';' condition ';' single_line_statement_2 '{' NL statement NL '}' NLD
     """
     p[0] = ("for_default", (p[2], p[4], p[6]), p[8])
     global in_loop
@@ -587,6 +587,7 @@ def p_assign_statement_default(p):  # add zero value handling / redeclare
         if p[4] is not None:
             if t != bool:
                 error_list.append("TypeError: non bool type assigned to bool")
+                return
             else:
                 names[p[2]] = p[4]  # Accepted
 
@@ -597,11 +598,13 @@ def p_assign_statement_default(p):  # add zero value handling / redeclare
         if p[4] is not None:
             if t != int:
                 error_list.append("TypeError: non int type assigned to int")
+                return
             else:
-                if (-1 << 63) <= p[4] < (1 << 63):
+                if -(1 << 63) <= p[4] < (1 << 63):
                     names[p[2]] = p[4]  # Accepted
                 else:
                     error_list.append(f"Overflow Error: can not use {p[4]} for int32")
+                    return
 
         else:
             names[p[2]] = 0  # zero accepted
@@ -610,13 +613,14 @@ def p_assign_statement_default(p):  # add zero value handling / redeclare
         if p[4] is not None:
             if t != str:
                 error_list.append("TypeError: non string type assigned to string")
+                return
             else:
                 names[p[2]] = p[4]  # Accepted
 
         else:
             names[p[2]] = ""  # zero accepted
 
-    p[0] = ("var", p[2], p[3], p[4])
+    p[0] = ("var_assign", p[2], type(names[p[2]]), p[4])
 
 
 def p_assign_expr(p):
@@ -658,6 +662,7 @@ def p_assign_const_statement(p):
         if p[4] is not None:
             if t != bool:
                 error_list.append("TypeError: non bool type assigned to bool")
+                return
             else:
                 names[p[2]] = p[4]  # Accepted
 
@@ -668,6 +673,7 @@ def p_assign_const_statement(p):
         if p[4] is not None:
             if t != int:
                 error_list.append("TypeError: non int type assigned to int")
+                return
             else:
                 names[p[2]] = p[4]  # Accepted
 
@@ -678,6 +684,7 @@ def p_assign_const_statement(p):
         if p[4] is not None:
             if t != str:
                 error_list.append("TypeError: non string type assigned to string")
+                return
             else:
                 names[p[2]] = p[4]  # Accepted
 
@@ -685,7 +692,7 @@ def p_assign_const_statement(p):
             names[p[2]] = ""  # zero accepted
 
     constants.add(p[2])
-    p[0] = ("constant", p[2], p[3], p[4])
+    p[0] = ("constant_assign", p[2], type(names[p[2]]), p[4])
 
 
 def p_def_statement(p):
@@ -703,7 +710,7 @@ def p_statement_reassign(p):
     """reassign_statement : ID "=" expr_cond"""
     # name check
     if p[1] not in names and p[1] not in global_names:
-        error_list.append("Undefined identifier '%s'" % p[1])
+        error_list.append("Error: Undefined identifier '%s'" % p[1])
         return
 
     # const check
@@ -729,7 +736,7 @@ def p_statement_reassign(p):
         p[0] = ("reassign", p[1], type(names[p[1]]), p[3])
     else:
         global_names[p[1]] = p[3]
-        p[0] = ("reassign", p[1], type(global_names[p[1]]), p[3])
+        p[0] = ("reassign_global", p[1], type(global_names[p[1]]), p[3])
 
 
 def p_statement_reassign_op(p):
@@ -799,7 +806,7 @@ def p_statement_reassign_op(p):
     if p[1] in names:
         p[0] = ("reassign_op", p[1], type(names[p[1]]), names[p[1]])
     else:
-        p[0] = ("reassign_op", p[1], type(global_names[p[1]]), global_names[p[1]])
+        p[0] = ("reassign_op_global", p[1], type(global_names[p[1]]), global_names[p[1]])
 
 
 def p_assign_oper(p):
@@ -989,9 +996,9 @@ def p_args_empty(p):
 
 def p_error(p):
     if p:
-        error_list.append("SyntaxError: Syntax error at '%s'" % p.value)
+        print("SyntaxError: Syntax error at '%s'" % p.value)
     else:
-        error_list.append("Syntax error at EOF")
+        print("Syntax error at EOF")
 
 
 yacc.yacc()
