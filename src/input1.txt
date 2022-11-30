@@ -1,0 +1,13 @@
+package main
+
+import "notfmt"
+
+const z int = 1
+func main() {
+	var x int = 1
+	var x int = 2
+	x = "abc"
+	z = 3
+	fmt.Println(x/0)
+	
+}

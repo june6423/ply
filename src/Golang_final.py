@@ -79,7 +79,7 @@ def t_INT(t):
 
 
 def t_NLD(t):
-    r'[\n\t\s]+'
+    r'[\t\s]*[\n]+[\t\s]*'
     t.lexer.lineno += t.value.count('\n')
     return t
 
@@ -140,6 +140,7 @@ start = 'start'
 is_fmt = False
 in_loop = 0
 in_switch = 0
+is_error = False
 
 print_list = []
 error_list = []
@@ -152,9 +153,9 @@ error_list = []
 
 def p_start(p):  # import statement 추가
     """
-    start : KPACKAGE KMAIN NLD global_statement import_statement NLD main_statement
+    start : KPACKAGE KMAIN NLD import_statement NLD main_statement
     """
-    p[0] = ("start", p[4], p[5], p[7])
+    p[0] = ("start", p[4], p[6])
     print_list.append(f"Code accepted: {p[0]}")
 
 
@@ -199,9 +200,9 @@ def p_statement_empty(p):
 
 def p_main_statement(p):
     """
-    main_statement : global_statement KFUNC KMAIN '(' ')' '{' NL statement '}'
+    main_statement : global_statement KFUNC KMAIN '(' ')' '{' NL statement '}' NL
     """
-    p[0] = (p[1], ("main", p[8]), None)
+    p[0] = (p[1], ("main", p[8]))
 
 
 # def p_main_statement_with_global(p):
@@ -327,22 +328,22 @@ def p_global_assign_const_statement(p):
 
 def p_if_statement(p):
     """
-    if_statement : KIF condition '{' NL statement NL '}' else_statement NLD
+    if_statement : KIF condition '{' NL statement '}' else_statement NLD
     """
-    p[0] = (("if", p[2], p[5]), ) + p[8]
+    p[0] = (("if", p[2], p[5]), ) + p[7]
     print_list.append(f"If accepted: {p[0]}")
 
 
 def p_else_statement_elif(p):
     """
-    else_statement : KELSE KIF condition '{' NL statement NL '}' else_statement
+    else_statement : KELSE KIF condition '{' NL statement '}' else_statement
     """
-    p[0] = (("else if", p[3], p[6]), ) + p[9]
+    p[0] = (("else if", p[3], p[6]), ) + p[8]
 
 
 def p_else_statement_else(p):
-    """else_statement : KELSE '{' NL statement NL '}'"""
-    p[0] = ("else", p[4])
+    """else_statement : KELSE '{' NL statement '}'"""
+    p[0] = (("else", p[4]), )
 
 
 def p_else_statement_empty(p):
@@ -459,9 +460,9 @@ def p_var_empty(p):
 
 def p_for_statement(p):
     """
-    for_statement : FOR single_line_statement_1 ';' condition ';' single_line_statement_2 '{' NL statement NL '}' NLD
+    for_statement : FOR single_line_statement_1 ';' condition ';' single_line_statement_2 '{' NL statement '}' NLD
     """
-    p[0] = ("for_default", (p[2], p[4], p[6]), p[8])
+    p[0] = ("for_default", (p[2], p[4], p[6]), p[9])
     global in_loop
     in_loop -= 1
     print_list.append(f"For accepted: {p[0]}")
@@ -477,9 +478,9 @@ def p_FOR(p):
 
 def p_for_statement_condition(p):
     """
-    for_statement : FOR condition '{' statement '}' NLD
+    for_statement : FOR condition '{' NL statement '}' NLD
     """
-    p[0] = ("for_condition", p[2], p[4])
+    p[0] = ("for_condition", p[2], p[5])
     global in_loop
     in_loop -= 1
     print_list.append(f"For accepted: {p[0]}")
@@ -487,9 +488,9 @@ def p_for_statement_condition(p):
 
 def p_for_statement_infinite(p):
     """
-    for_statement : FOR '{' statement '}' NLD
+    for_statement : FOR '{' NL statement '}' NLD
     """
-    p[0] = ("for_infinite", p[3])
+    p[0] = ("for_infinite", p[4])
     global in_loop
     in_loop -= 1
     print_list.append(f"For accepted: {p[0]}")
@@ -557,6 +558,11 @@ def p_increase_statement(p):
     # const check
     if p[1] in constants:
         error_list.append(f"Error: cannot assign to constant {p[1]}")
+        return
+
+    # type check
+    if type(names[p[1]]) != int:
+        error_list.append(f"Error: cannot add non-int type {type(names[p[1]])}")
         return
 
     if p[1] in names:
@@ -995,13 +1001,16 @@ def p_args_empty(p):
 
 
 def p_error(p):
+    global is_error
+    is_error = True
     if p:
         print("SyntaxError: Syntax error at '%s'" % p.value)
+        parser.errok()
     else:
         print("Syntax error at EOF")
 
 
-yacc.yacc()
+parser = yacc.yacc()
 
 # debugging process(stack view)
 
@@ -1014,14 +1023,15 @@ logging.basicConfig(
 
 # file execution for debug
 with open("input.txt") as f:
-    yacc.parse(f.read(), debug=logging.getLogger())
-    input()
+    parser.parse(f.read(), debug=logging.getLogger())
 
 
-if error_list:
+if error_list or is_error:
     print(*error_list, sep='\n')
 else:
     print(*print_list, sep='\n')
+
+input()
 
 
 # # file execution

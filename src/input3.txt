@@ -1,0 +1,10 @@
+package main
+
+import "fmt"
+
+func main() {
+	var x int = 99999999999999999999
+	var y string = "abc"
+	fmt.Println(x+z)
+	y *= 3
+}

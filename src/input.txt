@@ -1,40 +1,9 @@
 package main
 
 import "fmt"
-
-
-var x int = 3
-
 func main() {
-    x += 1
-    var y string = "123"
-    var z bool
-    for i := 0; i < 10; i++{
-        if i % 2 == 0{
-            fmt.Println("even")
-            continue
-        } else{
-            fmt.Println("odd")
-            continue
-        }
-    } 
-    
-    switch x{
-        case 3:
-            fmt.Println("x =", 3)
-        case 4:
-            fmt.Println("x =", 4)
-        default:
-            break
+    if (true) 
+    {
+        fmt.Println("True")
     }
-    
-    z = (1 > 3) == (4 < 2)
-    fmt.Println(z)
-    
-    y += "456"
-    fmt.Println(y)
-    
-    a := 10
-    a *= 4 * (2 + -3)
-    fmt.Println(a)  
 }
